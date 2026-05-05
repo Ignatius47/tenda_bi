@@ -2,6 +2,9 @@ services:
   - type: redis
     name: tenda-bi-redis
     plan: free
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: public
 
   - type: web
     name: tenda-bi-api
@@ -42,6 +45,7 @@ services:
           property: port
       - key: REDIS_URL
         fromService:
+          type: redis
           name: tenda-bi-redis
           property: connectionString
       - key: SHOPIFY_API_KEY
@@ -90,6 +94,7 @@ services:
           property: port
       - key: REDIS_URL
         fromService:
+          type: redis
           name: tenda-bi-redis
           property: connectionString
       - key: SHOPIFY_API_KEY
@@ -138,6 +143,7 @@ services:
           property: port
       - key: REDIS_URL
         fromService:
+          type: redis
           name: tenda-bi-redis
           property: connectionString
       - key: SHOPIFY_API_KEY

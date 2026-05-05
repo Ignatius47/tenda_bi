@@ -33,6 +33,7 @@ export default function ConnectPage() {
   const [email, setEmail]         = useState('')
   const [password, setPassword]   = useState('')
   const [loading, setLoading]     = useState(false)
+  const apiBase = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
 
   // Handle error param from backend (e.g. HMAC failed)
   useEffect(() => {
@@ -48,7 +49,7 @@ export default function ConnectPage() {
     if (!domain) { setErr('Enter your store URL'); return }
     if (!domain.includes('.')) domain = `${domain}.myshopify.com`
     // Redirect browser directly to backend OAuth start endpoint
-    window.location.href = `/api/auth/shopify/start/?shop=${encodeURIComponent(domain)}`
+    window.location.href = `${apiBase}/auth/shopify/start/?shop=${encodeURIComponent(domain)}`
   }
 
   const emailLogin = async (e) => {

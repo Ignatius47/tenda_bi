@@ -1,0 +1,152 @@
+services:
+  - type: redis
+    name: tenda-bi-redis
+    plan: free
+
+  - type: web
+    name: tenda-bi-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: python manage.py migrate && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://frontend-pi-two-34.vercel.app
+      - key: FRONTEND_URL
+        value: https://frontend-pi-two-34.vercel.app
+      - key: DB_NAME
+        fromDatabase:
+          name: tenda-bi-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: tenda-bi-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: tenda-bi-db
+          property: password
+      - key: DB_HOST
+        fromDatabase:
+          name: tenda-bi-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: tenda-bi-db
+          property: port
+      - key: REDIS_URL
+        fromService:
+          name: tenda-bi-redis
+          property: connectionString
+      - key: SHOPIFY_API_KEY
+        sync: false
+      - key: SHOPIFY_API_SECRET
+        sync: false
+      - key: SHOPIFY_REDIRECT_URI
+        sync: false
+
+  - type: worker
+    name: tenda-bi-celery-worker
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: celery -A core worker --loglevel=info --pool=solo
+    envVars:
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        sync: false
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://frontend-pi-two-34.vercel.app
+      - key: FRONTEND_URL
+        value: https://frontend-pi-two-34.vercel.app
+      - key: DB_NAME
+        fromDatabase:
+          name: tenda-bi-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: tenda-bi-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: tenda-bi-db
+          property: password
+      - key: DB_HOST
+        fromDatabase:
+          name: tenda-bi-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: tenda-bi-db
+          property: port
+      - key: REDIS_URL
+        fromService:
+          name: tenda-bi-redis
+          property: connectionString
+      - key: SHOPIFY_API_KEY
+        sync: false
+      - key: SHOPIFY_API_SECRET
+        sync: false
+      - key: SHOPIFY_REDIRECT_URI
+        sync: false
+
+  - type: worker
+    name: tenda-bi-celery-beat
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: celery -A core beat --loglevel=info
+    envVars:
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        sync: false
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://frontend-pi-two-34.vercel.app
+      - key: FRONTEND_URL
+        value: https://frontend-pi-two-34.vercel.app
+      - key: DB_NAME
+        fromDatabase:
+          name: tenda-bi-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: tenda-bi-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: tenda-bi-db
+          property: password
+      - key: DB_HOST
+        fromDatabase:
+          name: tenda-bi-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: tenda-bi-db
+          property: port
+      - key: REDIS_URL
+        fromService:
+          name: tenda-bi-redis
+          property: connectionString
+      - key: SHOPIFY_API_KEY
+        sync: false
+      - key: SHOPIFY_API_SECRET
+        sync: false
+      - key: SHOPIFY_REDIRECT_URI
+        sync: false
+
+databases:
+  - name: tenda-bi-db
+    plan: free

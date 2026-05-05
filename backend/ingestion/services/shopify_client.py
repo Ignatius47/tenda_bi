@@ -8,43 +8,48 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
+API_VERSION = '2024-10'
+
 
 class ShopifyClient:
     """
     All Shopify API communication lives here.
-    Views and tasks never call Shopify directly.
+    Views and tasks NEVER call Shopify directly — only through this class.
+    API version hardcoded to 2024-10 for stability.
     """
 
     def __init__(self, store):
-        self.store = store
-        self.token = store.access_token
-        self.base_url = f"https://{store.shop_domain}/admin/api/2024-10"
-        self.session = requests.Session()
+        self.store    = store
+        self.token    = store.access_token
+        # Always use hardcoded version — never rely on store.base_url
+        self.base_url = f"https://{store.shop_domain}/admin/api/{API_VERSION}"
+        self.session  = requests.Session()
         self.session.headers.update({
             'X-Shopify-Access-Token': self.token,
             'Content-Type': 'application/json',
         })
 
-    # ── OAuth helpers ─────────────────────────────────────────────────────────
+    # ── OAuth ─────────────────────────────────────────────────────────────────
 
     @staticmethod
     def build_auth_url(shop_domain: str, state: str) -> str:
-        return (
-            f"https://{shop_domain}/admin/oauth/authorize"
-            f"?client_id={settings.SHOPIFY_API_KEY}"
-            f"&scope={settings.SHOPIFY_SCOPES}"
-            f"&redirect_uri={settings.SHOPIFY_REDIRECT_URI}"
-            f"&state={state}"
-        )
+        from urllib.parse import urlencode
+        params = {
+            'client_id':    settings.SHOPIFY_API_KEY,
+            'scope':        settings.SHOPIFY_SCOPES,
+            'redirect_uri': settings.SHOPIFY_REDIRECT_URI,
+            'state':        state,
+        }
+        return f"https://{shop_domain}/admin/oauth/authorize?{urlencode(params)}"
 
     @staticmethod
     def exchange_token(shop_domain: str, code: str) -> str:
         resp = requests.post(
             f"https://{shop_domain}/admin/oauth/access_token",
             json={
-                'client_id': settings.SHOPIFY_API_KEY,
+                'client_id':     settings.SHOPIFY_API_KEY,
                 'client_secret': settings.SHOPIFY_API_SECRET,
-                'code': code,
+                'code':          code,
             },
             timeout=15,
         )
@@ -54,8 +59,8 @@ class ShopifyClient:
     @staticmethod
     def verify_hmac(params: dict, hmac_value: str) -> bool:
         filtered = {k: v for k, v in params.items() if k != 'hmac'}
-        message = '&'.join(f"{k}={v}" for k, v in sorted(filtered.items()))
-        digest = hmac.new(
+        message  = '&'.join(f"{k}={v}" for k, v in sorted(filtered.items()))
+        digest   = hmac.new(
             settings.SHOPIFY_API_SECRET.encode(),
             message.encode(),
             hashlib.sha256,
@@ -81,13 +86,13 @@ class ShopifyClient:
         return resp.json().get('products', [])
 
     def iter_products(self) -> Generator[dict, None, None]:
-        """Yield every product using cursor pagination."""
         since_id = 0
         while True:
             batch = self.get_products_page(since_id=since_id)
             if not batch:
                 break
-            yield from batch
+            for p in batch:
+                yield p
             if len(batch) < 250:
                 break
             since_id = batch[-1]['id']
@@ -112,13 +117,14 @@ class ShopifyClient:
         return resp.json().get('orders', [])
 
     def iter_orders(self, days_back: int = 365) -> Generator[dict, None, None]:
-        since = (datetime.utcnow() - timedelta(days=days_back)).isoformat()
+        since    = (datetime.utcnow() - timedelta(days=days_back)).isoformat()
         since_id = 0
         while True:
             batch = self.get_orders_page(since_id=since_id, created_at_min=since)
             if not batch:
                 break
-            yield from batch
+            for o in batch:
+                yield o
             if len(batch) < 250:
                 break
             since_id = batch[-1]['id']
@@ -140,7 +146,8 @@ class ShopifyClient:
             batch = self.get_customers_page(since_id=since_id)
             if not batch:
                 break
-            yield from batch
+            for c in batch:
+                yield c
             if len(batch) < 250:
                 break
             since_id = batch[-1]['id']

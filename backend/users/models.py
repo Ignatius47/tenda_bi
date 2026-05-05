@@ -8,7 +8,10 @@ class UserManager(BaseUserManager):
             raise ValueError('Email is required')
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
-        user.set_password(password)
+        if password:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
         user.save(using=self._db)
         return user
 
@@ -19,31 +22,36 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    ROLE_OWNER = 'owner'
+    """
+    User model. Supports both:
+    - Shopify OAuth login (no password, auto-created)
+    - Manual registration (email + password)
+    """
+    ROLE_OWNER   = 'owner'
     ROLE_MANAGER = 'manager'
     ROLE_ANALYST = 'analyst'
     ROLE_CHOICES = [
-        (ROLE_OWNER, 'Owner'),
+        (ROLE_OWNER,   'Owner'),
         (ROLE_MANAGER, 'Manager'),
         (ROLE_ANALYST, 'Analyst'),
     ]
 
-    email = models.EmailField(unique=True, db_index=True)
-    full_name = models.CharField(max_length=255, blank=True)
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=ROLE_OWNER)
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
+    email      = models.EmailField(unique=True, db_index=True)
+    full_name  = models.CharField(max_length=255, blank=True)
+    role       = models.CharField(max_length=20, choices=ROLE_CHOICES, default=ROLE_OWNER)
+    # Shopify OAuth users are marked here
+    shopify_auth = models.BooleanField(default=False)
+    is_active  = models.BooleanField(default=True)
+    is_staff   = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD  = 'email'
     REQUIRED_FIELDS = []
-
     objects = UserManager()
 
     class Meta:
         db_table = 'users'
-        verbose_name = 'User'
 
     def __str__(self):
         return self.email

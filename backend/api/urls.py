@@ -9,23 +9,27 @@ from api.views.shopify_views import (
     StoreListView, StoreSyncView, StoreSyncLogsView, WebhookView,
 )
 from api.views.dashboard_views import (
-    DashboardKPIView, RevenueTrendView, TopProductsView,
-    CategoryRevenueView, LocationRevenueView, InsightsView,
+    DashboardSummaryView, DashboardKPIView, RevenueTrendView,
+    TopProductsView, CategoryRevenueView, LocationRevenueView, InsightsView,
 )
-from api.views.inventory_views import InventoryOverviewView
-from api.views.customer_views import CustomerAnalyticsView, CustomerListView
-from api.views.alerts_views import AlertListView, AlertResolveView
+from api.views.other_views import (
+    InventoryOverviewView,
+    CustomerAnalyticsView, CustomerListView,
+    AlertListView, AlertResolveView,
+)
 
 urlpatterns = [
 
-    # ── Manual auth ────────────────────────────────────────────────────────────
+    # ── Auth (manual) ──────────────────────────────────────────────────────────
     path('auth/register/',         RegisterView.as_view()),
     path('auth/login/',            LoginView.as_view()),
     path('auth/token/refresh/',    TokenRefreshView.as_view()),
     path('auth/me/',               MeView.as_view()),
 
-    # ── Shopify-first OAuth (no login required) ────────────────────────────────
+    # ── Shopify-first OAuth ────────────────────────────────────────────────────
+    # Step 1: redirect to Shopify (no login required)
     path('auth/shopify/start/',    ShopifyAuthStartView.as_view()),
+    # Step 2: callback from Shopify — auto-creates user, returns JWT
     path('auth/shopify/callback/', ShopifyAuthCallbackView.as_view()),
 
     # ── Store management ───────────────────────────────────────────────────────
@@ -38,6 +42,9 @@ urlpatterns = [
     path('webhooks/<str:event>/',                         WebhookView.as_view()),
 
     # ── Dashboard ─────────────────────────────────────────────────────────────
+    # Single-call summary endpoint (mobile-optimised)
+    path('dashboard/<int:store_id>/summary/',             DashboardSummaryView.as_view()),
+    # Individual endpoints for desktop
     path('dashboard/<int:store_id>/kpis/',                DashboardKPIView.as_view()),
     path('dashboard/<int:store_id>/revenue-trend/',       RevenueTrendView.as_view()),
     path('dashboard/<int:store_id>/top-products/',        TopProductsView.as_view()),

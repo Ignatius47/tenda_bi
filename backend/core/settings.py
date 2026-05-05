@@ -156,7 +156,7 @@ SHOPIFY_API_KEY = os.environ.get('SHOPIFY_API_KEY', '')
 SHOPIFY_API_SECRET = os.environ.get('SHOPIFY_API_SECRET', '')
 SHOPIFY_API_VERSION = '2024-10'
 SHOPIFY_SCOPES = 'read_orders,read_products,read_customers,read_inventory,read_locations'
-SHOPIFY_REDIRECT_URI = os.environ.get('SHOPIFY_REDIRECT_URI', 'http://localhost:8000/api/shopify/callback/')
+SHOPIFY_REDIRECT_URI = os.environ.get('SHOPIFY_REDIRECT_URI', 'http://localhost:8000/api/auth/shopify/callback/')
 
 # ── Static ────────────────────────────────────────────────────────────────────
 LANGUAGE_CODE = 'en-us'
@@ -168,4 +168,3 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
-

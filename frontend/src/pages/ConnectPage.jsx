@@ -78,7 +78,7 @@ export default function ConnectPage() {
   }
 
   return (
-    <div style={{
+    <div className="connect-page" style={{
       minHeight: '100vh', display: 'flex',
       background: 'var(--bg-base)',
       position: 'relative', overflow: 'hidden',
@@ -92,34 +92,35 @@ export default function ConnectPage() {
         <ThemeToggle theme={theme} onToggle={toggle} />
       </div>
 
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
+      <div className="connect-shell" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
         <div className="fade-in" style={{ width: '100%', maxWidth: 440 }}>
 
           {/* Logo */}
-          <div style={{ textAlign: 'center', marginBottom: 36 }}>
+          <div className="connect-logo-wrap" style={{ textAlign: 'center', marginBottom: 36 }}>
             <img src={logoSrc} alt="Tenda Analytics"
+              className="connect-logo"
               style={{ height: 40, objectFit: 'contain', filter: theme === 'dark' ? 'none' : 'brightness(.85)' }} />
           </div>
 
           {/* Card */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '32px', boxShadow: 'var(--shadow-lg)' }}>
+          <div className="connect-card" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '32px', boxShadow: 'var(--shadow-lg)' }}>
 
             {!showEmail ? (
               <>
                 {/* Hero */}
-                <div style={{ textAlign: 'center', marginBottom: 28 }}>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-1)', marginBottom: 8, lineHeight: 1.3 }}>
+                <div className="connect-hero" style={{ textAlign: 'center', marginBottom: 28 }}>
+                  <div className="connect-title" style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-1)', marginBottom: 8, lineHeight: 1.3 }}>
                     Your store intelligence,<br />in one place.
                   </div>
-                  <div style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.7 }}>
+                  <div className="connect-subtitle" style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.7 }}>
                     Connect your Shopify store for instant analytics, inventory alerts, and AI insights. No forms. No setup.
                   </div>
                 </div>
 
                 {/* Feature pills */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, justifyContent: 'center', marginBottom: 28 }}>
+                <div className="connect-pills" style={{ display: 'flex', flexWrap: 'wrap', gap: 7, justifyContent: 'center', marginBottom: 28 }}>
                   {['Revenue trends', 'RFM segments', 'Stock alerts', 'AI insights'].map(f => (
-                    <span key={f} style={{ padding: '4px 12px', borderRadius: 20, background: 'var(--blue-bg)', color: 'var(--brand-blue)', fontSize: 12, fontWeight: 500 }}>
+                    <span key={f} className="connect-pill" style={{ padding: '4px 12px', borderRadius: 20, background: 'var(--blue-bg)', color: 'var(--brand-blue)', fontSize: 12, fontWeight: 500 }}>
                       {f}
                     </span>
                   ))}
@@ -137,7 +138,7 @@ export default function ConnectPage() {
                     Shopify store URL
                   </div>
 
-                  <div style={{
+                  <div className="connect-domain-wrap" style={{
                     display: 'flex', border: '1px solid var(--border)',
                     borderRadius: 10, overflow: 'hidden',
                     background: 'var(--bg-input)', marginBottom: 16,
@@ -146,16 +147,16 @@ export default function ConnectPage() {
                     onFocusCapture={e => e.currentTarget.style.borderColor = 'var(--brand-blue)'}
                     onBlurCapture={e => e.currentTarget.style.borderColor = 'var(--border)'}
                   >
-                    <input type="text" placeholder="your-store" value={shop}
+                    <input className="connect-domain-input" type="text" placeholder="your-store" value={shop}
                       onChange={e => setShop(e.target.value)} autoFocus
                       style={{ flex: 1, padding: '12px 14px', background: 'transparent', border: 'none', outline: 'none', fontSize: 14, color: 'var(--text-1)', fontFamily: 'var(--font)' }}
                     />
-                    <span style={{ padding: '12px 14px', fontSize: 13, color: 'var(--text-3)', borderLeft: '1px solid var(--border)', background: 'var(--bg-surface)', display: 'flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    <span className="connect-domain-suffix" style={{ padding: '12px 14px', fontSize: 13, color: 'var(--text-3)', borderLeft: '1px solid var(--border)', background: 'var(--bg-surface)', display: 'flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
                       .myshopify.com
                     </span>
                   </div>
 
-                  <button type="submit" style={{
+                  <button className="connect-cta" type="submit" style={{
                     width: '100%', padding: '13px 0', borderRadius: 10, border: 'none',
                     background: 'var(--brand-grad)', color: '#fff',
                     fontSize: 15, fontWeight: 700, cursor: 'pointer',
@@ -174,7 +175,7 @@ export default function ConnectPage() {
                   </button>
                 </form>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, fontSize: 12, color: 'var(--text-3)' }}>
+                <div className="connect-security" style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, fontSize: 12, color: 'var(--text-3)' }}>
                   <span>🔒</span>
                   <span>Secured via Shopify OAuth · Read-only access · No passwords stored</span>
                 </div>
@@ -231,7 +232,7 @@ export default function ConnectPage() {
             )}
           </div>
 
-          <p style={{ textAlign: 'center', marginTop: 16, fontSize: 12, color: 'var(--text-3)' }}>
+          <p className="connect-footnote" style={{ textAlign: 'center', marginTop: 16, fontSize: 12, color: 'var(--text-3)' }}>
             No credit card required · Works with any Shopify store
           </p>
         </div>

@@ -1,6 +1,4 @@
 import logging
-from datetime import datetime
-
 from celery import shared_task
 from django.utils import timezone as dj_timezone
 
@@ -15,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=60)
 def run_full_sync(self, store_id: int):
+    """Pull ALL Shopify data. Called once after OAuth install."""
     try:
         store = Store.objects.get(id=store_id, is_active=True)
     except Store.DoesNotExist:
@@ -30,24 +29,28 @@ def run_full_sync(self, store_id: int):
         customers_count = _ingest_customers(store, client)
         orders_count    = _ingest_orders(store, client, days_back=365)
 
-        # Inventory is non-fatal — skip if it fails
+        # Inventory is non-fatal
         try:
             _ingest_inventory(store, client)
         except Exception as e:
             logger.warning(f"Inventory sync skipped (non-fatal): {e}")
 
-        log.status          = SyncLog.STATUS_SUCCESS
-        log.products_synced = products_count
+        log.status           = SyncLog.STATUS_SUCCESS
+        log.products_synced  = products_count
         log.customers_synced = customers_count
-        log.orders_synced   = orders_count
-        log.finished_at     = dj_timezone.now()
+        log.orders_synced    = orders_count
+        log.finished_at      = dj_timezone.now()
         log.save()
 
         store.last_synced_at = dj_timezone.now()
         store.save(update_fields=['last_synced_at'])
 
-        logger.info(f"Full sync complete for {store.shop_domain}: {orders_count} orders, {products_count} products, {customers_count} customers")
+        logger.info(
+            f"Full sync complete for {store.shop_domain}: "
+            f"{orders_count} orders, {products_count} products, {customers_count} customers"
+        )
 
+        # Chain to ETL
         from warehouse.tasks import transform_all
         transform_all.delay(store_id)
 
@@ -64,6 +67,7 @@ def run_full_sync(self, store_id: int):
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=30)
 def run_incremental_sync(self, store_id: int):
+    """Pull only data changed since last sync. Runs every 15 min."""
     try:
         store = Store.objects.get(id=store_id, is_active=True)
     except Store.DoesNotExist:
@@ -75,7 +79,7 @@ def run_incremental_sync(self, store_id: int):
         client = ShopifyClient(store)
 
         if store.last_synced_at:
-            delta    = dj_timezone.now() - store.last_synced_at
+            delta     = dj_timezone.now() - store.last_synced_at
             days_back = max(1, delta.days + 1)
         else:
             days_back = 1
@@ -84,7 +88,6 @@ def run_incremental_sync(self, store_id: int):
         customers_count = _ingest_customers(store, client)
         orders_count    = _ingest_orders(store, client, days_back=days_back)
 
-        # Inventory is non-fatal — skip if it fails
         try:
             _ingest_inventory(store, client)
         except Exception as e:
@@ -116,6 +119,7 @@ def run_incremental_sync(self, store_id: int):
 
 @shared_task
 def sync_all_active_stores():
+    """Dispatched by Celery Beat every 15 minutes."""
     store_ids = list(Store.objects.filter(is_active=True).values_list('id', flat=True))
     for store_id in store_ids:
         run_incremental_sync.delay(store_id)
@@ -138,7 +142,7 @@ def handle_order_webhook(store_id: int, order_data: dict):
         from warehouse.tasks import transform_single_order
         transform_single_order.delay(store_id, shopify_id)
     except Exception as e:
-        logger.exception(f"Webhook order processing failed: {e}")
+        logger.exception(f"Webhook order failed: {e}")
 
 
 @shared_task
@@ -155,7 +159,7 @@ def handle_product_webhook(store_id: int, product_data: dict):
         from warehouse.tasks import transform_single_product
         transform_single_product.delay(store_id, shopify_id)
     except Exception as e:
-        logger.exception(f"Webhook product processing failed: {e}")
+        logger.exception(f"Webhook product failed: {e}")
 
 
 @shared_task
@@ -173,10 +177,10 @@ def handle_inventory_webhook(store_id: int, inventory_data: dict):
         from warehouse.tasks import transform_inventory
         transform_inventory.delay(store_id)
     except Exception as e:
-        logger.exception(f"Webhook inventory processing failed: {e}")
+        logger.exception(f"Webhook inventory failed: {e}")
 
 
-# ── Ingestion helpers ─────────────────────────────────────────────────────────
+# ── Internal helpers ──────────────────────────────────────────────────────────
 
 def _ingest_products(store: Store, client: ShopifyClient) -> int:
     count = 0
@@ -215,7 +219,7 @@ def _ingest_orders(store: Store, client: ShopifyClient, days_back: int = 365) ->
 
 
 def _ingest_inventory(store: Store, client: ShopifyClient):
-    """Pull inventory levels — skips locations that return errors."""
+    """Pull inventory — skips locations that return errors."""
     try:
         locations = client.get_locations()
     except Exception as e:

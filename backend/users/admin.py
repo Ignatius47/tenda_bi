@@ -5,19 +5,15 @@ from .models import User
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    ordering = ['email']
-    list_display = ['email', 'full_name', 'role', 'is_active', 'created_at']
-    list_filter = ['role', 'is_active', 'is_staff']
-    search_fields = ['email', 'full_name']
-    fieldsets = (
-        (None, {'fields': ('email', 'password')}),
-        ('Personal', {'fields': ('full_name', 'role')}),
-        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
-        ('Dates', {'fields': ('last_login',)}),
+    ordering        = ['email']
+    list_display    = ['email', 'full_name', 'role', 'shopify_auth', 'is_active', 'created_at']
+    list_filter     = ['role', 'is_active', 'shopify_auth']
+    search_fields   = ['email', 'full_name']
+    fieldsets       = (
+        (None,         {'fields': ('email', 'password')}),
+        ('Personal',   {'fields': ('full_name', 'role', 'shopify_auth')}),
+        ('Permissions',{'fields': ('is_active', 'is_staff', 'is_superuser')}),
     )
-    add_fieldsets = (
-        (None, {
-            'classes': ('wide',),
-            'fields': ('email', 'full_name', 'password1', 'password2'),
-        }),
+    add_fieldsets   = (
+        (None, {'classes': ('wide',), 'fields': ('email', 'full_name', 'password1', 'password2')}),
     )

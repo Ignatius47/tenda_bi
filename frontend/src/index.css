@@ -240,3 +240,86 @@ input, textarea, select { font-family: var(--font); }
 [class*="recharts"] * {
   transition: none !important;
 }
+
+/* Connect page mobile tuning */
+.connect-page .connect-card {
+  border-radius: 16px;
+}
+
+@media (max-width: 768px) {
+  .connect-page .connect-shell {
+    align-items: flex-start !important;
+    padding: 18px 14px 28px !important;
+  }
+
+  .connect-page .connect-logo-wrap {
+    margin-bottom: 18px !important;
+  }
+
+  .connect-page .connect-logo {
+    height: 34px !important;
+  }
+
+  .connect-page .connect-card {
+    padding: 20px 16px !important;
+    border-radius: 14px !important;
+  }
+
+  .connect-page .connect-hero {
+    margin-bottom: 18px !important;
+  }
+
+  .connect-page .connect-title {
+    font-size: 18px !important;
+    line-height: 1.28 !important;
+    margin-bottom: 6px !important;
+  }
+
+  .connect-page .connect-subtitle {
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+  }
+
+  .connect-page .connect-pills {
+    gap: 8px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .connect-page .connect-pill {
+    font-size: 11px !important;
+    padding: 5px 10px !important;
+  }
+
+  .connect-page .connect-cta {
+    min-height: 44px !important;
+    font-size: 14px !important;
+  }
+
+  .connect-page .connect-security {
+    align-items: flex-start !important;
+    line-height: 1.5 !important;
+  }
+
+  .connect-page .connect-footnote {
+    padding: 0 8px !important;
+    line-height: 1.45 !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .connect-page .connect-domain-wrap {
+    flex-direction: column !important;
+  }
+
+  .connect-page .connect-domain-input {
+    width: 100% !important;
+  }
+
+  .connect-page .connect-domain-suffix {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    border-left: 0 !important;
+    border-top: 1px solid var(--border) !important;
+    padding: 10px 14px !important;
+  }
+}
